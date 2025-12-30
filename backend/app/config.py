@@ -8,6 +8,7 @@ AI_TEXT_API_URL = os.getenv("AI_TEXT_API_URL", "http://localhost:8000/v1")
 AI_TEXT_API_KEY = os.getenv("AI_TEXT_API_KEY", "")
 AI_IMAGE_API_URL = os.getenv("AI_IMAGE_API_URL", "")
 AI_IMAGE_API_KEY = os.getenv("AI_IMAGE_API_KEY", "")
+AI_IMAGE_MODEL = os.getenv("AI_IMAGE_MODEL", "ecnu-image")
 
 # AI 提示词配置
 AI_TEXT_MODEL = os.getenv("AI_TEXT_MODEL", "gpt-3.5-turbo")
@@ -30,8 +31,9 @@ BLESSING_SYSTEM_PROMPT = os.getenv(
 # 阿里云 OSS 配置
 OSS_ACCESS_KEY_ID = os.getenv("OSS_ACCESS_KEY_ID", "")
 OSS_ACCESS_KEY_SECRET = os.getenv("OSS_ACCESS_KEY_SECRET", "")
-OSS_ENDPOINT = os.getenv("OSS_ENDPOINT", "")
-OSS_BUCKET_NAME = os.getenv("OSS_BUCKET_NAME", "")
+OSS_ENDPOINT = os.getenv("OSS_ENDPOINT", "oss-cn-shanghai.aliyuncs.com")
+OSS_BUCKET_NAME = os.getenv("OSS_BUCKET_NAME", "ecnunic-data-public")
+OSS_PREFIX = os.getenv("OSS_PREFIX", "macard-test")  # 目录前缀，不影响其他应用
 
 # OAuth2 SSO 配置
 OAUTH2_CLIENT_ID = os.getenv("OAUTH2_CLIENT_ID", "")

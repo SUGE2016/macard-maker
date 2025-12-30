@@ -50,7 +50,7 @@ function App() {
 
       {/* 页脚 */}
       <footer className="mt-12 py-6 text-center text-gray-400 text-sm">
-        <p>AI 贺卡制作工具 · 让祝福更有温度</p>
+        <p>聪明的贺年卡片生成工具 · 让祝福更有温度</p>
       </footer>
     </div>
   );

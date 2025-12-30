@@ -22,8 +22,8 @@ export function Header() {
             <span className="text-white font-bold text-lg">贺</span>
           </div>
           <div>
-            <h1 className="text-lg font-bold text-gray-800">AI 贺卡制作</h1>
-            <p className="text-xs text-gray-500">一键生成精美贺卡</p>
+            <h1 className="text-lg font-bold text-gray-800">新年小卡片</h1>
+            <p className="text-xs text-gray-500">聪明的贺年卡片生成工具</p>
           </div>
         </div>
 

@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { CardPreview, type CardPreviewRef } from './CardPreview';
 import { useCardStore } from '../store/cardStore';
 import { saveCard, generateImage } from '../services/api';
-import html2canvas from 'html2canvas';
+import { toPng } from 'html-to-image';
 
 export function PreviewArea() {
   const cardRef = useRef<CardPreviewRef>(null);
@@ -20,16 +20,24 @@ export function PreviewArea() {
   const handleGenerateImage = async () => {
     setIsGeneratingImage(true);
     try {
-      const [w, h] = config.aspectRatio.split(':').map(Number);
-      const baseSize = 512;
+      // ECNU 支持的尺寸: 512x512, 768x768, 1024x1024, 720x1280, 1280x720
       let width: number, height: number;
       
-      if (config.orientation === 'horizontal') {
-        width = baseSize;
-        height = Math.round((baseSize * h) / w);
+      if (config.aspectRatio === '1:1') {
+        width = 512;
+        height = 512;
+      } else if (config.aspectRatio === '16:9') {
+        if (config.orientation === 'horizontal') {
+          width = 1280;
+          height = 720;
+        } else {
+          width = 720;
+          height = 1280;
+        }
       } else {
-        height = baseSize;
-        width = Math.round((baseSize * h) / w);
+        // 4:3 等其他比例用 1024x1024 裁剪
+        width = 1024;
+        height = 1024;
       }
       
       const response = await generateImage('', width, height);
@@ -44,23 +52,33 @@ export function PreviewArea() {
 
   // 下载贺卡（同时自动保存到云端）
   const handleDownload = async () => {
-    const canvas = cardRef.current?.getCanvas();
-    if (!canvas) return;
+    const element = cardRef.current?.getCanvas();
+    if (!element) {
+      console.error('下载失败: 无法获取贺卡元素');
+      return;
+    }
 
     try {
-      const canvasEl = await html2canvas(canvas, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: null,
+      console.log('开始截图...');
+      const imageData = await toPng(element, {
+        pixelRatio: 2,
+        backgroundColor: config.showBorder ? '#ffffff' : undefined,
+        filter: (node) => {
+          // 排除带有 data-exclude-export 属性的元素（如删除按钮）
+          if (node instanceof HTMLElement && node.dataset.excludeExport === 'true') {
+            return false;
+          }
+          return true;
+        },
       });
-      
-      const imageData = canvasEl.toDataURL('image/png');
+      console.log('截图完成');
       
       // 下载到本地
       const link = document.createElement('a');
       link.download = `贺卡_${Date.now()}.png`;
       link.href = imageData;
       link.click();
+      console.log('下载完成');
       
       // 自动保存到云端（已登录时）
       if (token) {
@@ -78,9 +96,10 @@ export function PreviewArea() {
           console.error('自动保存失败:', err);
         }
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error('下载失败:', err);
-      alert('下载失败，请重试');
+      const errorMessage = err instanceof Error ? err.message : '未知错误';
+      alert(`下载失败: ${errorMessage}`);
     }
   };
 
@@ -94,7 +113,7 @@ export function PreviewArea() {
         <button
           onClick={handleDownload}
           disabled={!imageUrl}
-          className="absolute -top-2 -right-14 w-10 h-10 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-md"
+          className="absolute -top-2 -right-14 w-10 h-10 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-full flex items-center justify-center shadow-md hover:shadow-lg transition-all cursor-pointer z-20 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:shadow-md"
           title="下载贺卡"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

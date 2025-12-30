@@ -6,10 +6,10 @@
 // 贺卡默认配置
 export const CARD_CONFIG = {
   // 默认祝福语
-  defaultBlessingText: '岁岁常欢愉，\n年年皆胜意',
+  defaultBlessingText: '岁岁常欢愉，年年皆胜意',
   
   // 默认组织名称
-  defaultOrganizationName: 'XX 学校/机构',
+  defaultOrganizationName: '华东师范大学',
   
   // 默认宽高比
   defaultAspectRatio: '4:3' as const,

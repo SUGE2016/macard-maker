@@ -11,6 +11,12 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true,
       },
+      '/oss-proxy': {
+        target: 'https://ecnunic-data-public.oss-cn-shanghai.aliyuncs.com',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/oss-proxy/, ''),
+      },
     },
   },
 })

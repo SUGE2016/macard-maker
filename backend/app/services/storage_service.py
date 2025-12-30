@@ -5,7 +5,7 @@ from datetime import datetime
 from io import BytesIO
 from PIL import Image
 
-from app.config import OSS_ACCESS_KEY_ID, OSS_ACCESS_KEY_SECRET, OSS_ENDPOINT, OSS_BUCKET_NAME
+from app.config import OSS_ACCESS_KEY_ID, OSS_ACCESS_KEY_SECRET, OSS_ENDPOINT, OSS_BUCKET_NAME, OSS_PREFIX
 
 # 初始化 OSS 客户端
 auth = oss2.Auth(OSS_ACCESS_KEY_ID, OSS_ACCESS_KEY_SECRET)
@@ -36,11 +36,11 @@ async def upload_image(image_data: str, user_id: int) -> tuple[str, str]:
         image_data = image_data.split(",")[1]
     image_bytes = base64.b64decode(image_data)
     
-    # 生成文件名
+    # 生成文件名（使用 OSS_PREFIX 目录前缀）
     timestamp = datetime.now().strftime("%Y%m%d")
     unique_id = uuid.uuid4().hex[:8]
-    key = f"cards/{user_id}/{timestamp}/{unique_id}.png"
-    thumbnail_key = f"cards/{user_id}/{timestamp}/{unique_id}_thumb.png"
+    key = f"{OSS_PREFIX}/cards/{user_id}/{timestamp}/{unique_id}.png"
+    thumbnail_key = f"{OSS_PREFIX}/cards/{user_id}/{timestamp}/{unique_id}_thumb.png"
     
     # 上传原图
     bucket.put_object(key, image_bytes, headers={"Content-Type": "image/png"})
