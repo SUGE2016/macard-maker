@@ -57,27 +57,6 @@ const fireworksOptions = {
   }
 };
 
-// API 调用
-async function generateText(prompt: string) {
-  const response = await fetch('/api/ai/generate-text', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt })
-  });
-  if (!response.ok) throw new Error('生成祝福语失败');
-  return response.json();
-}
-
-async function generateImage(prompt: string) {
-  const response = await fetch('/api/ai/generate-image', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt, width: 512, height: 680 })
-  });
-  if (!response.ok) throw new Error('生成图片失败');
-  return response.json();
-}
-
 export function BlindboxPage() {
   const [step, setStep] = useState<Step>('home');
   const [size, setSize] = useState(200);
@@ -87,7 +66,6 @@ export function BlindboxPage() {
   const [cardVisible, setCardVisible] = useState(false);
   const [cardOffset, setCardOffset] = useState(0);
   const [cardImage, setCardImage] = useState('');
-  const [blessing, setBlessing] = useState('');
   const [hongbaoY, setHongbaoY] = useState(0);
   const [particlesReady, setParticlesReady] = useState(false);
   
@@ -263,7 +241,6 @@ export function BlindboxPage() {
     setStep('growing');
     setGlowing(true);
     setCardImage(`https://picsum.photos/seed/${Date.now()}/512/680`);
-    setBlessing('马到成功，新春大吉！');
     
     // 延迟启动粒子，确保 DOM 已渲染
     setTimeout(() => startConvergeParticles(), 50);
@@ -309,7 +286,6 @@ export function BlindboxPage() {
     setCardOffset(0);
     setHongbaoY(0);
     setCardImage('');
-    setBlessing('');
     setSize(200);
     
     // 等待状态更新完成
@@ -333,10 +309,10 @@ export function BlindboxPage() {
       
       {/* 背景 */}
       <div className="blindbox-bg">
-        <img className="cloud cloud-1" src="/backgrounds/cloud.png" alt="" />
-        <img className="cloud cloud-2" src="/backgrounds/cloud.png" alt="" />
-        <img className="cloud cloud-3" src="/backgrounds/cloud.png" alt="" />
-        <img className="cloud cloud-4" src="/backgrounds/cloud.png" alt="" />
+        <img className="cloud cloud-1" src="/backgrounds/cloud-small.png" alt="" />
+        <img className="cloud cloud-2" src="/backgrounds/cloud-small.png" alt="" />
+        <img className="cloud cloud-3" src="/backgrounds/cloud-small.png" alt="" />
+        <img className="cloud cloud-4" src="/backgrounds/cloud-small.png" alt="" />
         {/* 背景烟花 */}
         {particlesReady && (
           <Particles
