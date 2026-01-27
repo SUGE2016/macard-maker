@@ -1,0 +1,145 @@
+/* 红包颜色变量 */
+.hongbao-container {
+  --red-primary: #c92a2a;
+  --red-dark: #8b1a1a;
+  --red-light: #e03131;
+  --gold-primary: #d4a82e;
+  --gold-light: #f4d03f;
+  
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* 红包主体 - z-index 最高，遮住卡片下半部分 */
+.hongbao-body {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, var(--red-light) 0%, var(--red-primary) 30%, var(--red-dark) 100%);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4), inset 0 2px 0 rgba(255,255,255,0.15);
+  border: 3px solid var(--gold-primary);
+  z-index: 5;
+}
+
+/* 红包内部光芒 */
+.hongbao-inner-glow {
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  height: 30%;
+  background: linear-gradient(180deg, var(--gold-light) 0%, transparent 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 12px 12px 0 0;
+}
+
+.hongbao-container:hover .hongbao-inner-glow {
+  opacity: 0.6;
+}
+
+/* 福字圆圈 */
+.hongbao-center {
+  position: absolute;
+  top: 58%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 35%;
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold-primary) 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  z-index: 2;
+}
+
+.hongbao-center span {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--red-primary);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* 红包封口 */
+.hongbao-flap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(180deg, var(--red-dark) 0%, var(--red-primary) 100%);
+  border-radius: 12px 12px 100px 100px;
+  border: 3px solid var(--gold-primary);
+  transform-origin: top center;
+  transform-style: preserve-3d;
+}
+
+/* 封口金扣 - 翻转到背面时隐藏 */
+.hongbao-flap-seal {
+  position: absolute;
+  bottom: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20%;
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold-primary) 100%);
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  backface-visibility: hidden;
+}
+
+/* 卡片槽 - 在红包主体后面 */
+.hongbao-card-slot {
+  position: absolute;
+  top: 10%;
+  left: 5%;
+  width: 90%;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  background: #fdf6e3;
+  z-index: 0;
+}
+
+.hongbao-card-slot img {
+  width: 100%;
+  display: block;
+}
+
+/* 振动效果 */
+@keyframes hongbao-shake {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  10% { transform: translateY(-2px) rotate(-1deg); }
+  20% { transform: translateY(1px) rotate(1deg); }
+  30% { transform: translateY(-3px) rotate(-0.5deg); }
+  40% { transform: translateY(2px) rotate(0.5deg); }
+  50% { transform: translateY(-2px) rotate(-1deg); }
+  60% { transform: translateY(1px) rotate(1deg); }
+  70% { transform: translateY(-3px) rotate(-0.5deg); }
+  80% { transform: translateY(2px) rotate(0.5deg); }
+  90% { transform: translateY(-1px) rotate(-0.5deg); }
+}
+
+.hongbao-shaking {
+  animation: hongbao-shake 0.15s ease-in-out infinite;
+}
+
+/* 发光效果 */
+.hongbao-glowing {
+  filter: drop-shadow(0 0 40px rgba(244, 208, 63, 0.8));
+}
+
+/* 悬浮动画 */
+@keyframes hongbao-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.hongbao-floating {
+  animation: hongbao-float 3s ease-in-out infinite;
+}

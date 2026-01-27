@@ -1,0 +1,311 @@
+.blindbox-page {
+  --red-primary: #c92a2a;
+  --red-dark: #8b1a1a;
+  --red-light: #e03131;
+  --gold-primary: #d4a82e;
+  --gold-light: #f4d03f;
+  --cream: #fdf6e3;
+
+  position: relative;
+  width: 100%;
+  max-width: 430px;
+  height: 100vh;
+  max-height: 932px;
+  margin: 0 auto;
+  background: linear-gradient(180deg, var(--red-primary) 0%, var(--red-dark) 100%);
+  overflow: hidden;
+}
+
+/* 礼花 canvas */
+.confetti-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+@media (min-width: 431px) {
+  .blindbox-page {
+    box-shadow: 0 0 60px rgba(0,0,0,0.5);
+  }
+}
+
+/* 背景装饰 */
+.blindbox-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* 背景烟花 */
+.fireworks-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.cloud {
+  position: absolute;
+  opacity: 0.3;
+}
+
+.cloud-1 { top: 5%; left: 5%; width: 120px; animation: float 8s ease-in-out infinite; }
+.cloud-2 { top: 15%; right: 10%; width: 80px; animation: float-flipped 6s ease-in-out infinite 1s backwards; }
+.cloud-3 { bottom: 20%; left: 8%; width: 100px; animation: float 7s ease-in-out infinite 0.5s; }
+.cloud-4 { bottom: 30%; right: 5%; width: 90px; animation: float-flipped 9s ease-in-out infinite 2s backwards; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+/* 翻转的云：始终保持 scaleX(-1)，不会出现翻转过程 */
+@keyframes float-flipped {
+  0%, 100% { transform: translateY(0) scaleX(-1); }
+  50% { transform: translateY(-15px) scaleX(-1); }
+}
+
+/* 页面通用 */
+.page {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* 调试面板 */
+.debug-panel {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  z-index: 1000;
+  background: rgba(0,0,0,0.8);
+  color: #0f0;
+  font-family: monospace;
+  font-size: 12px;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.debug-step {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 4px;
+  color: #ff0;
+}
+
+.debug-props {
+  word-break: break-all;
+}
+
+/* 继续按钮 */
+.continue-btn {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  padding: 16px 60px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #fff;
+  background: #2563eb;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.5);
+  animation: pulse-btn 1s ease-in-out infinite;
+}
+
+@keyframes pulse-btn {
+  0%, 100% { box-shadow: 0 4px 20px rgba(37, 99, 235, 0.5); }
+  50% { box-shadow: 0 4px 30px rgba(37, 99, 235, 0.8); }
+}
+
+/* 重置按钮 */
+.reset-btn {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  z-index: 100;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.7);
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.reset-btn:hover {
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+}
+
+/* 首页 */
+.page-home {
+  gap: 50px;
+}
+
+.title {
+  font-size: 3rem;
+  font-weight: 900;
+  color: var(--gold-light);
+  text-shadow: 0 4px 8px rgba(0,0,0,0.3), 0 0 40px rgba(244, 208, 63, 0.3);
+  letter-spacing: 0.1em;
+  margin: 0;
+}
+
+.hongbao-wrapper {
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.hongbao-wrapper:hover {
+  transform: scale(1.02);
+}
+
+.hongbao-wrapper:active {
+  transform: scale(0.98);
+}
+
+/* 首页粒子效果 */
+.home-particles {
+  position: absolute;
+  inset: -50px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* 按钮 */
+.btn-primary {
+  padding: 18px 60px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--red-dark);
+  background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold-primary) 100%);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 8px 30px rgba(212, 168, 46, 0.4);
+  transition: all 0.3s ease;
+  letter-spacing: 0.1em;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(212, 168, 46, 0.5);
+}
+
+.btn-secondary {
+  padding: 15px 35px;
+  font-size: 1rem;
+  font-weight: bold;
+  color: var(--gold-light);
+  background: transparent;
+  border: 2px solid var(--gold-primary);
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(212, 168, 46, 0.1);
+}
+
+.btn-group {
+  display: flex;
+  gap: 15px;
+  z-index: 20;
+}
+
+/* 加载页 */
+.page-loading {
+  position: relative;
+}
+
+
+.hongbao-animated {
+  position: relative;
+  transition: transform 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* 粒子容器 - 在页面中心，z-index 高于红包 */
+.page-loading .particles-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  overflow: visible;
+  z-index: 100;
+}
+
+.loading-text {
+  position: absolute;
+  bottom: 100px;
+  color: var(--gold-light);
+  font-size: 1.1rem;
+  letter-spacing: 0.2em;
+  text-shadow: 0 0 20px rgba(244, 208, 63, 0.5);
+}
+
+/* 汇聚粒子动画 */
+.converge-particle {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0;
+  animation: convergeToCenter 2s ease-in forwards;
+}
+
+@keyframes convergeToCenter {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(1.2);
+  }
+  15% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+  85% {
+    opacity: 1;
+    transform: translate(var(--move-x), var(--move-y)) scale(0.4);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--move-x), var(--move-y)) scale(0);
+  }
+}
+
+/* 结果页按钮 */
+.result-buttons {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 15px;
+  z-index: 200;
+  align-items: center;
+}
+
+.result-buttons .btn-primary,
+.result-buttons .btn-secondary {
+  padding: 12px 25px;
+  font-size: 1rem;
+  white-space: nowrap;
+}
