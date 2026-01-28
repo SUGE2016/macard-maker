@@ -9,6 +9,9 @@ AI_TEXT_API_KEY = os.getenv("AI_TEXT_API_KEY", "")
 AI_IMAGE_API_URL = os.getenv("AI_IMAGE_API_URL", "")
 AI_IMAGE_API_KEY = os.getenv("AI_IMAGE_API_KEY", "")
 AI_IMAGE_MODEL = os.getenv("AI_IMAGE_MODEL", "ecnu-image")
+AI_IMAGE_SIZE = os.getenv("AI_IMAGE_SIZE", "720x1280")  # 支持的尺寸由接口决定
+AI_IMAGE_WIDTH = int(os.getenv("AI_IMAGE_WIDTH", "720"))
+AI_IMAGE_HEIGHT = int(os.getenv("AI_IMAGE_HEIGHT", "1280"))
 
 # AI 提示词配置
 AI_TEXT_MODEL = os.getenv("AI_TEXT_MODEL", "gpt-3.5-turbo")

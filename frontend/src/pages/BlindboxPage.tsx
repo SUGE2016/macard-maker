@@ -57,6 +57,36 @@ const fireworksOptions = {
   }
 };
 
+// 预加载图片并返回尺寸
+function preloadImage(url: string): Promise<{ url: string; width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve({ url, width: img.naturalWidth, height: img.naturalHeight });
+    img.onerror = () => reject(new Error('图片加载失败'));
+    img.src = url;
+  });
+}
+
+// API 调用
+async function generateCardImage(): Promise<{ url: string; width: number; height: number }> {
+  const response = await fetch('/api/ai/generate-image', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt: '' })
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ detail: '网络错误' }));
+    throw new Error(error.detail || '生成图片失败');
+  }
+  
+  const data = await response.json();
+  // 通过代理加载外部图片，避免跨域问题
+  const proxyUrl = `/api/ai/image-proxy?url=${encodeURIComponent(data.image_url)}`;
+  // 预加载图片，等下载完成后返回尺寸
+  return preloadImage(proxyUrl);
+}
+
 export function BlindboxPage() {
   const [step, setStep] = useState<Step>('home');
   const [size, setSize] = useState(200);
@@ -68,6 +98,11 @@ export function BlindboxPage() {
   const [cardImage, setCardImage] = useState('');
   const [hongbaoY, setHongbaoY] = useState(0);
   const [particlesReady, setParticlesReady] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [cardFullyOut, setCardFullyOut] = useState(false);
+  const [normalHongbaoY, setNormalHongbaoY] = useState(0);  // 保存正常状态的红包位置
+  const [fullOutHongbaoY, setFullOutHongbaoY] = useState(0);  // 保存完全弹出时的红包位置
+  const [normalCardOffset, setNormalCardOffset] = useState(0);  // 保存正常状态的卡片偏移
   
   const particlesRef = useRef<HTMLDivElement>(null);
   const particleIntervalsRef = useRef<number[]>([]);
@@ -233,17 +268,32 @@ export function BlindboxPage() {
     // 确保从初始状态开始
     setSize(200);
     setShaking(false);
+    setError(null);
     
     // 等一帧确保渲染
     await new Promise(r => requestAnimationFrame(() => r(undefined)));
     
-    // Step 1: 红包开始变大 + 粒子汇聚
+    // Step 1: 红包开始变大 + 粒子汇聚 + 同时调用 API
     setStep('growing');
     setGlowing(true);
-    setCardImage(`https://picsum.photos/seed/${Date.now()}/512/680`);
     
     // 延迟启动粒子，确保 DOM 已渲染
     setTimeout(() => startConvergeParticles(), 50);
+    
+    // 同时开始调用 API 和动画
+    const apiPromise = generateCardImage()
+      .then(result => {
+        setCardImage(result.url);
+        return result;
+      })
+      .catch(err => {
+        console.error('生成图片失败:', err);
+        // 失败时使用占位图
+        const fallbackUrl = `https://picsum.photos/seed/${Date.now()}/720/1280`;
+        setCardImage(fallbackUrl);
+        setError(err.message || '生成图片失败，使用默认图片');
+        return { url: fallbackUrl, width: 720, height: 1280 };
+      });
     
     // 平滑加速变大：200 -> 320，在280时开始振动
     await animateSize(200, 320, 1200, 280);
@@ -251,6 +301,27 @@ export function BlindboxPage() {
     // Step 2: 继续变大到最大
     setStep('maxSize');
     await animateSize(320, 400, 400);
+
+    // 等待 API 返回（如果还没完成）
+    const imageResult = await apiPromise;
+    
+    // 根据图片尺寸动态计算位置
+    const hongbaoWidth = 400;
+    const hongbaoHeight = hongbaoWidth * 1.4;  // 560px
+    const cardWidth = hongbaoWidth * 0.9;  // 360px
+    const cardHeight = cardWidth * (imageResult.height / imageResult.width);
+    const overlap = 50;  // 红包遮挡图片底部的像素
+    // 图片垂直居中，红包下移到只遮挡图片底部一点点
+    const finalCardOffset = -cardHeight + overlap - hongbaoHeight * 0.1;
+    const normalY = cardHeight / 2 - overlap + hongbaoHeight / 2;
+    // 完全弹出：红包完全不遮挡图片（红包顶部在图片底部下方）
+    const fullOutY = cardHeight / 2 + hongbaoHeight / 2 + 20;  // 额外 20px 间距
+    
+    // 保存位置值供切换使用
+    setNormalHongbaoY(normalY);
+    setFullOutHongbaoY(fullOutY);
+    setNormalCardOffset(finalCardOffset);
+    setCardFullyOut(false);
 
     // Step 4: 封口打开（停止振动和粒子）
     setStep('flapOpen');
@@ -260,7 +331,7 @@ export function BlindboxPage() {
     
     await new Promise(r => setTimeout(r, 100));
 
-    // Step 5: 卡片探出
+    // Step 5: 卡片探出（用 cardMaxHeight 限制显示范围）
     setStep('cardPeek');
     setCardVisible(true);
     setCardOffset(-80);
@@ -270,10 +341,23 @@ export function BlindboxPage() {
     // Step 6: 卡片爆发弹出 + 红包下移 + 礼花（同时进行）
     setStep('result');
     fireConfettiEffect();
-    setCardOffset(-450);
-    setHongbaoY(490);
+    setCardOffset(finalCardOffset);
+    setHongbaoY(normalY);
     setGlowing(false);
-  }, [startConvergeParticles, stopConvergeParticles, fireConfettiEffect]);
+  }, [startConvergeParticles, stopConvergeParticles, fireConfettiEffect, animateSize]);
+
+  // 切换卡片完全弹出/正常状态
+  const toggleCardFullyOut = useCallback(() => {
+    if (step !== 'result') return;
+    setCardFullyOut(prev => {
+      const newState = !prev;
+      // 红包下移时，图片需要往上移动相同距离来保持垂直居中
+      const hongbaoMoveDelta = fullOutHongbaoY - normalHongbaoY;
+      setHongbaoY(newState ? fullOutHongbaoY : normalHongbaoY);
+      setCardOffset(newState ? normalCardOffset - hongbaoMoveDelta : normalCardOffset);
+      return newState;
+    });
+  }, [step, fullOutHongbaoY, normalHongbaoY, normalCardOffset]);
 
   // 重新开始（新的惊喜）- 直接从粒子汇聚开始
   const handleReset = useCallback(async () => {
@@ -287,6 +371,8 @@ export function BlindboxPage() {
     setHongbaoY(0);
     setCardImage('');
     setSize(200);
+    setError(null);
+    setCardFullyOut(false);
     
     // 等待状态更新完成
     await new Promise(r => setTimeout(r, 50));
@@ -362,13 +448,22 @@ export function BlindboxPage() {
               cardVisible={cardVisible}
               cardOffset={cardOffset}
               transitionDuration={400}
+              onCardClick={step === 'result' ? toggleCardFullyOut : undefined}
+              cardMaxHeight={step === 'result' ? undefined : size * 1.4 * 0.9 - cardOffset}
             />
           </div>
         </div>
       )}
 
-      {/* 结果页按钮 */}
-      {step === 'result' && (
+      {/* 错误提示 */}
+      {error && (
+        <div className="error-toast" onClick={() => setError(null)}>
+          {error}
+        </div>
+      )}
+
+      {/* 结果页按钮 - 完全弹出模式下隐藏 */}
+      {step === 'result' && !cardFullyOut && (
         <div className="result-buttons">
           <button className="btn-primary" onClick={handleSave}>保存图片</button>
           <button className="btn-secondary" onClick={handleReset}>新的惊喜</button>

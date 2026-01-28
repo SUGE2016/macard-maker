@@ -11,6 +11,7 @@ from app.config import (
     AI_IMAGE_API_KEY,
     AI_TEXT_MODEL,
     AI_IMAGE_MODEL,
+    AI_IMAGE_SIZE,
     IMAGE_PROMPT,
     BLESSING_SYSTEM_PROMPT,
 )
@@ -82,19 +83,19 @@ def build_random_prompt(base_prompt: str) -> str:
     return enhanced_prompt
 
 
-async def generate_image(prompt: Optional[str], width: int = 512, height: int = 512) -> str:
+async def generate_image(prompt: Optional[str], width: int = None, height: int = None) -> str:
     """
     调用文生图 API 生成图片（兼容 OpenAI/ECNU 接口）
     
-    提示词从 .env 配置读取，并添加随机元素增加多样性
+    尺寸从 .env 配置读取（AI_IMAGE_SIZE），提示词添加随机元素增加多样性
     """
     if not AI_IMAGE_API_URL:
         raise Exception("AI_IMAGE_API_URL 未配置，请在 .env 文件中设置")
     if not AI_IMAGE_API_KEY:
         raise Exception("AI_IMAGE_API_KEY 未配置，请在 .env 文件中设置")
     
-    # 转换尺寸为 size 格式，支持的尺寸: 512x512, 768x768, 720x1280, 1280x720, 1024x1024
-    size = f"{width}x{height}"
+    # 使用配置的尺寸
+    size = AI_IMAGE_SIZE
     
     # 添加随机元素到提示词
     final_prompt = build_random_prompt(IMAGE_PROMPT)

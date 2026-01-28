@@ -26,6 +26,10 @@ export interface HongbaoProps {
   zIndex?: number;
   /** 点击事件 */
   onClick?: () => void;
+  /** 点击卡片事件 */
+  onCardClick?: () => void;
+  /** 卡片最大高度（用于动画过程中限制显示） */
+  cardMaxHeight?: number;
   className?: string;
 }
 
@@ -49,6 +53,8 @@ export const Hongbao = forwardRef<HongbaoRef, HongbaoProps>(({
   transitionDuration = 300,
   zIndex = 1,
   onClick,
+  onCardClick,
+  cardMaxHeight,
   className = '',
 }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -128,11 +134,25 @@ export const Hongbao = forwardRef<HongbaoRef, HongbaoProps>(({
           className="hongbao-card-slot" 
           style={{
             transform: `translateY(${cardVisible ? cardOffset : 0}px)`,
-            transition: `transform ${transitionDuration}ms ease-out, z-index 0s`,
+            transition: `transform ${transitionDuration}ms ease-out, z-index 0s, max-height ${transitionDuration}ms ease-out`,
             zIndex: isOpen ? 3 : 0,
+            cursor: onCardClick ? 'pointer' : 'default',
+            ...(cardMaxHeight !== undefined && { maxHeight: cardMaxHeight, overflow: 'hidden' }),
+          }}
+          onClick={(e) => {
+            if (onCardClick) {
+              e.stopPropagation();
+              onCardClick();
+            }
           }}
         >
           <img src={cardImage} alt="贺卡" />
+          {/* 二维码占位 */}
+          <div className="hongbao-qrcode-placeholder">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm13-2h3v2h-3v-2zm-5 0h2v3h-2v-3zm2 3h3v2h-3v-2zm0 4h5v2h-5v-2zm3-4h2v4h-2v-4z"/>
+            </svg>
+          </div>
         </div>
       )}
 
