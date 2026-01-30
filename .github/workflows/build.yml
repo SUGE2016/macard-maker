@@ -35,7 +35,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: frontend-dist
-          path: frontend/dist
+          path: frontend/frontend-dist
 
   # 构建并推送 Docker 镜像
   build-docker:
