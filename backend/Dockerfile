@@ -1,4 +1,5 @@
-FROM docker.1ms.run/python:3.12-slim
+ARG REGISTRY_MIRROR=docker.1ms.run/
+FROM ${REGISTRY_MIRROR}python:3.12-slim
 
 WORKDIR /app
 

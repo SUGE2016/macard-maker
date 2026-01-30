@@ -1,5 +1,6 @@
 # 仅负责构建环境；运行时执行 build，产物写到挂载的目录（compose 里挂载 ./frontend-dist）
-FROM docker.1ms.run/node:20-alpine
+ARG REGISTRY_MIRROR=docker.1ms.run/
+FROM ${REGISTRY_MIRROR}node:20-alpine
 
 WORKDIR /app
 
