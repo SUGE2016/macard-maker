@@ -196,6 +196,8 @@ export const Hongbao = forwardRef<HongbaoRef, HongbaoProps>(({
             alt="" 
             className="card-bottom-decoration" 
           />
+          {/* 版权信息 - 页脚右上方 */}
+          <span className="card-copyright">©信息化治理办公室</span>
           {/* 页脚 - 烫金名称 + 二维码 */}
           <div className="hongbao-card-footer">
             <img src="/backgrounds/ecnu-name.png" alt="华东师范大学" className="footer-name" />

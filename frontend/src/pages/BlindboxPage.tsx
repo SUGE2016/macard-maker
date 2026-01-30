@@ -19,46 +19,26 @@ type Step =
   | 'cardOut'      // 卡片弹出 + 彩带
   | 'result';      // 完成
 
-// 首页少量粒子配置
+// 首页粒子配置
 const homeParticlesOptions = {
   fullScreen: { enable: false },
   particles: {
-    number: { value: 15 },
-    color: { value: ['#f4d03f', '#ffeaa7', '#fff'] },
+    number: { value: 40 },
+    color: { value: ['#f4d03f', '#ffeaa7', '#fff', '#fdcb6e'] },
     shape: { type: 'circle' as const },
-    opacity: { value: { min: 0.2, max: 0.6 } },
-    size: { value: { min: 1, max: 3 } },
+    opacity: { value: { min: 0.2, max: 0.7 } },
+    size: { value: { min: 1, max: 4 } },
     move: {
       enable: true,
-      speed: 0.5,
-      direction: 'top' as const,
+      speed: 0.4,
+      direction: 'none' as const,
       outModes: { default: 'out' as const },
-      random: true
-    },
-    twinkle: { particles: { enable: true, frequency: 0.03, opacity: 1 } }
-  },
-  detectRetina: true
-};
-
-// 背景烟花配置
-const fireworksOptions = {
-  fullScreen: { enable: false },
-  detectRetina: true,
-  particles: {
-    number: { value: 20 },
-    color: { value: ['#f4d03f', '#ffeaa7', '#fff'] },
-    shape: { type: 'circle' as const },
-    opacity: { value: { min: 0.3, max: 0.8 } },
-    size: { value: { min: 1, max: 3 } },
-    move: {
-      enable: true,
-      speed: 1,
-      direction: 'top' as const,
-      outModes: { default: 'out' as const },
-      random: true
+      random: true,
+      straight: false,
     },
     twinkle: { particles: { enable: true, frequency: 0.05, opacity: 1 } }
-  }
+  },
+  detectRetina: true
 };
 
 // 预加载图片并返回尺寸
@@ -110,8 +90,12 @@ export function BlindboxPage() {
   const [fullOutHongbaoY, setFullOutHongbaoY] = useState(0);  // 保存完全弹出时的红包位置
   const [normalCardOffset, setNormalCardOffset] = useState(0);  // 保存正常状态的卡片偏移
   
-  const particlesRef = useRef<HTMLDivElement>(null);
-  const particleIntervalsRef = useRef<number[]>([]);
+  const particlesCanvasRef = useRef<HTMLCanvasElement>(null);
+  const particlesAnimRef = useRef<number | null>(null);
+  const particlesDataRef = useRef<Array<{
+    x: number; y: number; vx: number; vy: number;
+    size: number; color: string; life: number; maxLife: number;
+  }>>([]);
   const confettiCanvasRef = useRef<HTMLCanvasElement>(null);
   const confettiInstanceRef = useRef<ReturnType<typeof confetti.create> | null>(null);
 
@@ -176,68 +160,137 @@ export function BlindboxPage() {
     }, 100);
   }, []);
 
-  // 汇聚粒子效果
+  // Canvas 汇聚粒子效果
   const startConvergeParticles = useCallback(() => {
-    const container = particlesRef.current;
-    if (!container) {
-      return;
-    }
+    const canvas = particlesCanvasRef.current;
+    if (!canvas) return;
     
-    container.innerHTML = '';
-    particleIntervalsRef.current.forEach(id => clearTimeout(id));
-    particleIntervalsRef.current = [];
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
     
-    const colors = ['#f4d03f', '#ffeaa7', '#fdcb6e', '#fff', '#f39c12'];
-    let spawnRate = 80;
-    let batchSize = 15;
-    let minDuration = 1.5;
+    // 设置 canvas 尺寸（考虑设备像素比）
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);  // 限制最大 2x
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.scale(dpr, dpr);
     
-    const createParticle = () => {
-      const particle = document.createElement('div');
-      particle.className = 'converge-particle';
-      
-      const angle = Math.random() * Math.PI * 2;
-      const distance = 160 + Math.random() * 80;
-      const startX = Math.cos(angle) * distance;
-      const startY = Math.sin(angle) * distance;
-      const size = 2 + Math.random() * 4;
-      const duration = minDuration + Math.random() * 0.8;
-      const color = colors[Math.floor(Math.random() * colors.length)];
-      
-      particle.style.cssText = `
-        left: calc(50% + ${startX}px);
-        top: calc(50% + ${startY}px);
-        width: ${size}px;
-        height: ${size}px;
-        background: ${color};
-        box-shadow: 0 0 ${size * 2}px ${color};
-        --move-x: ${-startX}px;
-        --move-y: ${-startY}px;
-        animation: convergeToCenter ${duration}s ease-in forwards;
-      `;
-      
-      container.appendChild(particle);
-      setTimeout(() => particle.remove(), duration * 1000);
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const colors = ['#f4d03f', '#ffeaa7', '#fdcb6e', '#ffffff', '#f39c12'];
+    
+    // 清空粒子数组
+    particlesDataRef.current = [];
+    
+    let spawnRate = 60;
+    let batchSize = 18;
+    let lastSpawn = 0;
+    
+    const addParticles = (count: number) => {
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 160 + Math.random() * 80;
+        const x = centerX + Math.cos(angle) * distance;
+        const y = centerY + Math.sin(angle) * distance;
+        const speed = 0.02 + Math.random() * 0.01;
+        
+        particlesDataRef.current.push({
+          x, y,
+          vx: (centerX - x) * speed,
+          vy: (centerY - y) * speed,
+          size: 1.5 + Math.random() * 2,  // 1.5-3.5px
+          color: colors[Math.floor(Math.random() * colors.length)],
+          life: 0,
+          maxLife: 60 + Math.random() * 30  // 帧数
+        });
+      }
     };
     
-    const accelerate = () => {
-      for (let i = 0; i < batchSize; i++) createParticle();
+    const animate = (timestamp: number) => {
+      if (!particlesAnimRef.current) return;
       
-      if (spawnRate > 30) spawnRate *= 0.85;
-      if (batchSize < 30) batchSize += 0.6;
-      if (minDuration > 0.4) minDuration *= 0.94;
+      // 生成新粒子
+      if (timestamp - lastSpawn > spawnRate) {
+        addParticles(batchSize);
+        lastSpawn = timestamp;
+        if (spawnRate > 30) spawnRate *= 0.88;
+        if (batchSize < 30) batchSize += 0.5;
+      }
       
-      const id = window.setTimeout(accelerate, spawnRate);
-      particleIntervalsRef.current.push(id);
+      // 清空画布
+      ctx.clearRect(0, 0, rect.width, rect.height);
+      
+      // 更新和绘制粒子
+      const particles = particlesDataRef.current;
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.life++;
+        
+        const lifeRatio = p.life / p.maxLife;
+        const fadeInEnd = 0.15;   // 15% 时间用于浮现
+        const fadeOutStart = 0.85; // 85% 开始淡出
+        
+        // 移动逻辑：浮现期不动，之后加速汇聚
+        if (lifeRatio > fadeInEnd) {
+          // 汇聚阶段：easeIn 加速效果
+          const moveProgress = (lifeRatio - fadeInEnd) / (1 - fadeInEnd);
+          const accel = 1 + moveProgress * moveProgress * 3;  // 越来越快
+          p.x += p.vx * accel;
+          p.y += p.vy * accel;
+        }
+        
+        // 移除到达中心或超时的粒子
+        const distToCenter = Math.hypot(p.x - centerX, p.y - centerY);
+        if (p.life > p.maxLife || distToCenter < 8) {
+          particles.splice(i, 1);
+          continue;
+        }
+        
+        // 透明度：快速淡入，中间保持，最后淡出
+        let alpha = 1;
+        if (lifeRatio < fadeInEnd) {
+          alpha = lifeRatio / fadeInEnd;  // 淡入
+        } else if (lifeRatio > fadeOutStart) {
+          alpha = 1 - (lifeRatio - fadeOutStart) / (1 - fadeOutStart);  // 淡出
+        }
+        
+        // 粒子越接近中心越小
+        const progress = 1 - distToCenter / 240;
+        const currentSize = p.size * (1 - progress * 0.6);
+        const drawSize = Math.max(currentSize, 0.5);
+        
+        // 绘制发光效果（半透明光晕）
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, drawSize * 2, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = alpha * 0.3;
+        ctx.fill();
+        
+        // 绘制粒子核心（实心亮点）
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, drawSize, 0, Math.PI * 2);
+        ctx.globalAlpha = alpha;
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      
+      particlesAnimRef.current = requestAnimationFrame(animate);
     };
     
-    accelerate();
+    particlesAnimRef.current = requestAnimationFrame(animate);
   }, []);
 
   const stopConvergeParticles = useCallback(() => {
-    particleIntervalsRef.current.forEach(id => clearTimeout(id));
-    particleIntervalsRef.current = [];
-    if (particlesRef.current) particlesRef.current.innerHTML = '';
+    if (particlesAnimRef.current) {
+      cancelAnimationFrame(particlesAnimRef.current);
+      particlesAnimRef.current = null;
+    }
+    particlesDataRef.current = [];
+    const canvas = particlesCanvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
   }, []);
 
   // 平滑变大动画（加速曲线）
@@ -371,7 +424,20 @@ export function BlindboxPage() {
     const hongbaoHeight = hongbaoWidth * 1.4;  // 560px
     const cardWidth = hongbaoWidth * 0.9;  // 360px
     const cardHeight = cardWidth * (imageResult.height / imageResult.width);
-    const overlap = 50;  // 红包遮挡图片底部的像素
+    
+    // 计算红包与卡片的重叠量
+    const screenHeight = window.innerHeight;
+    const buttonsArea = 70;  // 底部按钮区域 (bottom:30 + 按钮高度:40)
+    const minOverlap = 20;   // 默认最小重叠
+    
+    // 只关心卡片+按钮是否能放下（红包大部分在屏幕外是正常的）
+    const neededHeight = cardHeight + buttonsArea;
+    // 只有屏幕特别矮时才增加 overlap
+    const extraOverlap = Math.max(0, neededHeight - screenHeight);
+    
+    const maxOverlap = 150;
+    const overlap = Math.min(maxOverlap, minOverlap + extraOverlap);
+    
     // 图片垂直居中，红包下移到只遮挡图片底部一点点
     const finalCardOffset = -cardHeight + overlap - hongbaoHeight * 0.1;
     const normalY = cardHeight / 2 - overlap + hongbaoHeight / 2;
@@ -475,9 +541,8 @@ export function BlindboxPage() {
       // 按比例计算尺寸（基于 360px 宽度下的尺寸）
       const scale = img.width / 360;
       const footerHeight = Math.round(36 * scale);
-      // 二维码放在页脚内，不凸出
-      const qrSize = Math.round(32 * scale);
-      const qrBoxSize = footerHeight;  // 和页脚一样高
+      // 二维码尺寸与 HTML 一致
+      const qrSize = Math.round(40 * scale);
       const padding = Math.round(12 * scale);
       
       const canvasWidth = img.width;
@@ -493,10 +558,10 @@ export function BlindboxPage() {
       ctx.drawImage(img, 0, 0);
       
       // 绘制底部装饰图（在页脚下层，带阴影，与 CSS 保持一致）
-      const maxDecorWidth = canvasWidth * 0.85;  // max-width: 85%
+      const maxDecorWidth = canvasWidth * 0.5;  // max-width: 50%
       const maxDecorHeight = canvasHeight * 0.25;  // max-height: 25%
       const decorLeft = Math.round(15 * scale);  // left: 15px
-      const decorBottom = Math.round(20 * scale);  // bottom: 20px
+      const decorBottom = Math.round(35 * scale);  // bottom: 35px
       
       // 计算实际尺寸（保持宽高比，不超过最大限制）
       const imgRatio = bottomDecorImg.width / bottomDecorImg.height;
@@ -522,9 +587,9 @@ export function BlindboxPage() {
       ctx.fillStyle = gradient;
       ctx.fillRect(0, footerY, canvasWidth, footerHeight);
       
-      // 二维码位置（在页脚右侧）
-      const qrX = canvasWidth - qrBoxSize;
-      const qrY = footerY;  // 和页脚顶部对齐
+      // 二维码位置（在页脚右侧，与 CSS bottom: -2px 一致）
+      const qrX = canvasWidth - qrSize;
+      const qrY = canvasHeight - qrSize + Math.round(2 * scale);  // bottom: -2px
       
       // 绘制页脚文字图片（居左）
       const footerImgHeight = Math.round(24 * scale);
@@ -561,12 +626,10 @@ export function BlindboxPage() {
       qrCode.append(tempDiv);
       await new Promise(resolve => setTimeout(resolve, 100));
       
-      // 获取二维码 canvas，居中放置在页脚右侧
+      // 获取二维码 canvas
       const qrCanvas = tempDiv.querySelector('canvas');
       if (qrCanvas) {
-        const qrDrawX = qrX + (qrBoxSize - qrSize) / 2;
-        const qrDrawY = qrY + (qrBoxSize - qrSize) / 2;
-        ctx.drawImage(qrCanvas, qrDrawX, qrDrawY, qrSize, qrSize);
+        ctx.drawImage(qrCanvas, qrX, qrY, qrSize, qrSize);
       }
       tempDiv.remove();
       
@@ -583,8 +646,8 @@ export function BlindboxPage() {
       const labelY = Math.round(8 * scale);
       const labelRadius = Math.round(10 * scale);
       
-      // 绘制胶囊背景
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+      // 绘制胶囊背景（与 CSS rgba(255,255,255,0.30) 一致）
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.30)';
       ctx.beginPath();
       ctx.roundRect(labelX, labelY, labelWidth, labelHeight, labelRadius);
       ctx.fill();
@@ -616,14 +679,6 @@ export function BlindboxPage() {
         <img className="cloud cloud-2" src="/backgrounds/cloud-small.png" alt="" />
         <img className="cloud cloud-3" src="/backgrounds/cloud-small.png" alt="" />
         <img className="cloud cloud-4" src="/backgrounds/cloud-small.png" alt="" />
-        {/* 背景烟花 */}
-        {particlesReady && (
-          <Particles
-            id="fireworks"
-            className="fireworks-bg"
-            options={fireworksOptions}
-          />
-        )}
       </div>
 
       {/* 首页 */}
@@ -650,8 +705,8 @@ export function BlindboxPage() {
       {/* 动画进行中 */}
       {isAnimating && (
         <div className="page page-loading">
-          {/* 粒子容器 - 在红包上层 */}
-          <div ref={particlesRef} className="particles-container" />
+          {/* Canvas 粒子容器 - 在红包上层 */}
+          <canvas ref={particlesCanvasRef} className="particles-canvas" />
           <div 
             className="hongbao-animated"
             style={{ transform: `translateY(${hongbaoY}px)` }}
@@ -670,6 +725,13 @@ export function BlindboxPage() {
               cardMaxHeight={step === 'result' ? undefined : size * 1.4 * 0.9 - cardOffset}
             />
           </div>
+          {/* 结果页按钮 */}
+          {step === 'result' && !cardFullyOut && (
+            <div className="result-buttons">
+              <button className="btn-primary" onClick={handleSave}>分享贺年卡</button>
+              <button className="btn-secondary" onClick={handleReset}>新的惊喜</button>
+            </div>
+          )}
         </div>
       )}
 
@@ -677,14 +739,6 @@ export function BlindboxPage() {
       {error && (
         <div className="error-toast" onClick={() => setError(null)}>
           {error}
-        </div>
-      )}
-
-      {/* 结果页按钮 - 完全弹出模式下隐藏 */}
-      {step === 'result' && !cardFullyOut && (
-        <div className="result-buttons">
-          <button className="btn-primary" onClick={handleSave}>分享贺年卡</button>
-          <button className="btn-secondary" onClick={handleReset}>新的惊喜</button>
         </div>
       )}
 
