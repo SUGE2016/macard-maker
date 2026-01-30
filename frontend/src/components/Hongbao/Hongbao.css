@@ -169,9 +169,9 @@
 /* 底部装饰图 - 在页脚下层 */
 .hongbao-card-slot .card-bottom-decoration {
   position: absolute;
-  bottom: 20px;
+  bottom: 35px;
   left: 15px;
-  max-width: 85%;
+  max-width: 50%;
   max-height: 25%;
   height: auto;
   object-fit: contain;
@@ -179,6 +179,19 @@
   z-index: 1;
   pointer-events: none;
   filter: drop-shadow(0 -4px 8px rgba(0, 0, 0, 0.3));
+}
+
+/* 版权信息 - 页脚右上方，很隐蔽 */
+.hongbao-card-slot .card-copyright {
+  position: absolute;
+  bottom: 38px;
+  right: 4px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.5);
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+  line-height: 1;
+  pointer-events: none;
 }
 
 /* AI生成标签 - 图片左上角胶囊 */
