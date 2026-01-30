@@ -150,13 +150,6 @@ export const Hongbao = forwardRef<HongbaoRef, HongbaoProps>(({
     zIndex: isOpen ? 1 : 10,
   };
 
-  // const cardStyle: React.CSSProperties = {
-  //   transition: `all ${transitionDuration}ms ease-out`,
-  //   opacity: cardVisible ? 1 : 0,
-  //   transform: `translateX(-50%) translateY(${cardVisible ? cardOffset : 50}px)`,
-  //   pointerEvents: cardVisible ? 'auto' : 'none',
-  // };
-
   return (
     <div
       ref={containerRef}
