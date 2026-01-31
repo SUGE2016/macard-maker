@@ -207,6 +207,7 @@ export const Hongbao = forwardRef<HongbaoRef, HongbaoProps>(({
         <div className="hongbao-center">
           <span style={{ fontSize: size * 0.16 }}>福</span>
         </div>
+        <span className="hongbao-brand" style={{ fontSize: size * 0.06 }}>ChatECNU</span>
       </div>
 
       {/* 红包封口 - 顶部，遮住卡片 */}

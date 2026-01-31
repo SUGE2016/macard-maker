@@ -696,9 +696,13 @@ export function BlindboxPage() {
             )}
             <Hongbao size={200} />
           </div>
-          <button className="btn-primary" onClick={handleStart}>
-            装入新年祝福
-          </button>
+          <div className="btn-wrapper">
+            <span className="btn-hint">点击汇聚新年祝福</span>
+            <button className="btn-primary" onClick={handleStart}>
+              祝全球校友新春快乐
+            </button>
+          </div>
+          <span className="home-copyright">©信息化治理办公室</span>
         </div>
       )}
 
