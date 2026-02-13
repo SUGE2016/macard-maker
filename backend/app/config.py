@@ -3,11 +3,20 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# AI 服务配置
+# 图片生成后端切换：ecnu / jimeng
+AI_IMAGE_PROVIDER = os.getenv("AI_IMAGE_PROVIDER", "jimeng")
+
+# ECNU 接口配置（OpenAI 兼容）
 AI_IMAGE_API_URL = os.getenv("AI_IMAGE_API_URL", "")
 AI_IMAGE_API_KEY = os.getenv("AI_IMAGE_API_KEY", "")
 AI_IMAGE_MODEL = os.getenv("AI_IMAGE_MODEL", "ecnu-image")
-AI_IMAGE_SIZE = os.getenv("AI_IMAGE_SIZE", "720x1280")  # 支持的尺寸由接口决定
+AI_IMAGE_SIZE = os.getenv("AI_IMAGE_SIZE", "720x1280")
+
+# 即梦接口配置（火山引擎 AK/SK 鉴权）
+VOLC_ACCESS_KEY = os.getenv("VOLC_ACCESS_KEY", "")
+VOLC_SECRET_KEY = os.getenv("VOLC_SECRET_KEY", "")
+AI_IMAGE_WIDTH = int(os.getenv("AI_IMAGE_WIDTH", "1056"))
+AI_IMAGE_HEIGHT = int(os.getenv("AI_IMAGE_HEIGHT", "1584"))
 
 # AI 提示词配置
 IMAGE_PROMPT = os.getenv(

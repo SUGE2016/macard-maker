@@ -1,10 +1,19 @@
 # 复制此文件为 .env 并修改配置
 # cp env-example.txt .env
 
-# 文生图 API（ECNU 接口）
+# 图片生成后端切换：ecnu / jimeng
+AI_IMAGE_PROVIDER=jimeng
+
+# ECNU 接口配置（provider=ecnu 时使用）
 AI_IMAGE_API_URL=https://chat.ecnu.edu.cn/open/api/v1/images/generations
 AI_IMAGE_API_KEY=your-api-key
 AI_IMAGE_MODEL=ecnu-image
+
+# 即梦接口配置（provider=jimeng 时使用）
+VOLC_ACCESS_KEY=your-access-key
+VOLC_SECRET_KEY=your-secret-key
+# AI_IMAGE_WIDTH=1056
+# AI_IMAGE_HEIGHT=1584
 
 # OAuth2 SSO 配置
 OAUTH2_CLIENT_ID=your-client-id

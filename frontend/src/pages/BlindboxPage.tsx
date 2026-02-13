@@ -396,7 +396,7 @@ export function BlindboxPage() {
         apiResolved = true;
         slowGrowRef.current?.cancel();
         // 失败时使用占位图
-        const fallbackUrl = `https://picsum.photos/seed/${Date.now()}/720/1280`;
+        const fallbackUrl = `https://placehold.co/720x1280/e74c3c/ffffff?text=Lucky You!`;
         setCardImage(fallbackUrl);
         setError(err.message || '生成图片失败，使用默认图片');
         return { url: fallbackUrl, width: 720, height: 1280 };

@@ -26,6 +26,8 @@ async def api_generate_image(request: GenerateImageRequest):
         image_url = await generate_image(request.prompt, request.width, request.height)
         return GenerateImageResponse(image_url=image_url)
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"生成图片失败: {str(e)}")
 
 
