@@ -540,9 +540,10 @@ export function BlindboxPage() {
       
       // 按比例计算尺寸（基于 360px 宽度下的尺寸）
       const scale = img.width / 360;
-      const footerHeight = Math.round(36 * scale);
-      // 二维码尺寸与 HTML 一致
-      const qrSize = Math.round(40 * scale);
+      const footerHeight = Math.round(40 * scale);
+      // 二维码显示尺寸（32px）与边距（4px），与 CSS 一致
+      const qrDisplaySize = Math.round(32 * scale);
+      const qrMargin = Math.round(4 * scale);
       const padding = Math.round(12 * scale);
       
       const canvasWidth = img.width;
@@ -561,7 +562,7 @@ export function BlindboxPage() {
       const maxDecorWidth = canvasWidth * 0.5;  // max-width: 50%
       const maxDecorHeight = canvasHeight * 0.25;  // max-height: 25%
       const decorLeft = Math.round(15 * scale);  // left: 15px
-      const decorBottom = Math.round(35 * scale);  // bottom: 35px
+      const decorBottom = Math.round(39 * scale);  // bottom: 39px
       
       // 计算实际尺寸（保持宽高比，不超过最大限制）
       const imgRatio = bottomDecorImg.width / bottomDecorImg.height;
@@ -587,15 +588,31 @@ export function BlindboxPage() {
       ctx.fillStyle = gradient;
       ctx.fillRect(0, footerY, canvasWidth, footerHeight);
       
-      // 二维码位置（在页脚右侧，与 CSS bottom: -2px 一致）
-      const qrX = canvasWidth - qrSize;
-      const qrY = canvasHeight - qrSize + Math.round(2 * scale);  // bottom: -2px
+      // 二维码位置（页脚右侧，上下左右等距 4px）
+      const qrX = canvasWidth - qrDisplaySize - qrMargin;
+      const qrY = footerY + (footerHeight - qrDisplaySize) / 2;
       
       // 绘制页脚文字图片（居左）
       const footerImgHeight = Math.round(24 * scale);
       const footerImgWidth = footerImg.width * (footerImgHeight / footerImg.height);
       const footerImgY = footerY + (footerHeight - footerImgHeight) / 2;
       ctx.drawImage(footerImg, padding, footerImgY, footerImgWidth, footerImgHeight);
+      
+      // 绘制二维码提示文字（紧贴二维码左侧，右对齐）
+      const hintFontSize = Math.round(10 * scale);
+      ctx.font = `${hintFontSize}px sans-serif`;
+      ctx.fillStyle = '#f4d03f';
+      ctx.textAlign = 'right';
+      const hintLine1 = '识别二维码';
+      const hintLine2 = '生成自己的春节贺卡';
+      const hintLineHeight = hintFontSize * 1.3;
+      const hintX = qrX - Math.round(4 * scale);
+      const hintCenterY = footerY + footerHeight / 2;
+      ctx.textBaseline = 'middle';
+      ctx.fillText(hintLine1, hintX, hintCenterY - hintLineHeight / 2);
+      ctx.fillText(hintLine2, hintX, hintCenterY + hintLineHeight / 2);
+      ctx.textBaseline = 'alphabetic';
+      ctx.textAlign = 'left';
       
       // 生成圆点风格二维码
       const tempDiv = document.createElement('div');
@@ -604,8 +621,8 @@ export function BlindboxPage() {
       document.body.appendChild(tempDiv);
       
       const qrCode = new QRCodeStyling({
-        width: qrSize,
-        height: qrSize,
+        width: 200,
+        height: 200,
         data: QR_CODE_URL,
         type: 'canvas',
         dotsOptions: {
@@ -629,7 +646,7 @@ export function BlindboxPage() {
       // 获取二维码 canvas
       const qrCanvas = tempDiv.querySelector('canvas');
       if (qrCanvas) {
-        ctx.drawImage(qrCanvas, qrX, qrY, qrSize, qrSize);
+        ctx.drawImage(qrCanvas, qrX, qrY, qrDisplaySize, qrDisplaySize);
       }
       tempDiv.remove();
       
