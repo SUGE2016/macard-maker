@@ -604,7 +604,7 @@ export function BlindboxPage() {
       ctx.fillStyle = '#f4d03f';
       ctx.textAlign = 'right';
       const hintLine1 = '识别二维码';
-      const hintLine2 = '生成自己的春节贺卡';
+      const hintLine2 = '生成春节贺卡';
       const hintLineHeight = hintFontSize * 1.3;
       const hintX = qrX - Math.round(4 * scale);
       const hintCenterY = footerY + footerHeight / 2;

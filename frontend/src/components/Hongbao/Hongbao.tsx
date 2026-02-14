@@ -194,7 +194,7 @@ export const Hongbao = forwardRef<HongbaoRef, HongbaoProps>(({
           {/* 页脚 - 烫金名称 + 二维码 */}
           <div className="hongbao-card-footer">
             <img src="/backgrounds/ecnu-name.png" alt="华东师范大学" className="footer-name" />
-            <span className="footer-qr-hint">识别二维码<br/>生成自己的春节贺卡</span>
+            <span className="footer-qr-hint">识别二维码<br/>生成春节贺卡</span>
             <div className="footer-qrcode">
               <div ref={qrRef} className="qrcode-dots" />
             </div>
