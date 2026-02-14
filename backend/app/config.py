@@ -23,6 +23,7 @@ IMAGE_PROMPT = os.getenv(
     "IMAGE_PROMPT",
     "Chinese New Year greeting card background, traditional Chinese style, golden clouds, red lanterns, festive atmosphere, elegant and auspicious, high quality"
 )
+JIMENG_EXTRA_PROMPT = os.getenv("JIMENG_EXTRA_PROMPT", "")
 
 # OAuth2 SSO 配置
 OAUTH2_CLIENT_ID = os.getenv("OAUTH2_CLIENT_ID", "")

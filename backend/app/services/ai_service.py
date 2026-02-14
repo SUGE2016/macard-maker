@@ -19,6 +19,7 @@ from app.config import (
     AI_IMAGE_WIDTH,
     AI_IMAGE_HEIGHT,
     IMAGE_PROMPT,
+    JIMENG_EXTRA_PROMPT,
 )
 
 
@@ -199,7 +200,10 @@ async def _generate_image_jimeng(prompt: Optional[str], width: int = None, heigh
 
     w = AI_IMAGE_WIDTH
     h = AI_IMAGE_HEIGHT
-    final_prompt = build_random_prompt(IMAGE_PROMPT)
+    base_prompt = IMAGE_PROMPT
+    if JIMENG_EXTRA_PROMPT:
+        base_prompt = f"{IMAGE_PROMPT}, {JIMENG_EXTRA_PROMPT}"
+    final_prompt = build_random_prompt(base_prompt)
 
     print(f"[AI] 即梦文生图: size={w}x{h}")
     print(f"[AI] 提示词: {final_prompt}")
